@@ -1,58 +1,48 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
-using System.Text.RegularExpressions;
 namespace renameNumFiles
 {
-    class Program
+    public class Program
     {
         static void Main(string[] args)
         {
-            if (args.Length == 0)
-            {
-                Console.WriteLine("No Input");
-                return;
-            }
-
-            if (args.Length > 1)
-            {
-                Console.WriteLine("Too many args");
-                return;
-            }
-
+            if(args.Length != 1)
+                goto HelpAndExit;
             string dir = args[0];
-            string[] everFiles;
+            IEnumerable<string> everFiles;
 
             try
             {
-                everFiles = Directory.GetFiles(dir);
-                everFiles = everFiles.Select(file => Path.GetFileName(file)).ToArray();
+                everFiles =
+                from longFilename in Directory.GetFiles(dir)
+                select Path.GetFileName(longFilename);
             }
             catch
             {
-                Console.WriteLine("Not vaild dir");
-                return;
+                goto HelpAndExit;
             }
 
-            IEnumerable<string> oldNumFiles = everFiles.Where(file => Regex.IsMatch(file, @"\d+"));
-            var headers = oldNumFiles.Select(file => GetHead(file)).Distinct();
-            
+            IEnumerable<string> oldNumFiles =
+            from file in everFiles
+            where FileNameRegex.RightmostInt.IsMatch(file)
+            orderby SortHash.Gen(file)
+            select file;
+
+            var headers = oldNumFiles.Select(file => FileNameRegex.GetHead(file)).Distinct();            
             Dictionary<string, int> NameCounter = new Dictionary<string, int>();
             Dictionary<string, string> CharLength = new Dictionary<string, string>();
             foreach (string h in headers)//Init Dic
             {
                 NameCounter.Add(h, 0);
-                CharLength.Add(h,string.Format("D{0}", (oldNumFiles.Where(file => GetHead(file) == h).Count() / 10 + 1)));
+                CharLength.Add(h,string.Format("D{0}", (oldNumFiles.Where(file => FileNameRegex.GetHead(file) == h).Count() / 10 + 1)));
             }
 
             IEnumerable<string> newNumFiles = oldNumFiles.Select(oldfile => 
             {
-                string head = GetHead(oldfile);
-                Regex rgx = new Regex(GetNum(oldfile), RegexOptions.RightToLeft);
-                string ret = rgx.Replace(oldfile, NameCounter[head].ToString(CharLength[head]), 1);
+                string head = FileNameRegex.GetHead(oldfile);
+                string ret = FileNameRegex.RightmostInt.Replace(oldfile, NameCounter[head].ToString(CharLength[head]), 1);
                 NameCounter[head]++;
                 return ret;
             });
@@ -65,25 +55,14 @@ namespace renameNumFiles
 
             foreach (var p in pairs)
             {
-                Console.WriteLine(string.Format("rename : {0} => {1}", p.Item1, p.Item2));
+                Console.WriteLine($"rename : {p.Item1} => {p.Item2}");
                 File.Move(Path.Combine(dir, p.Item1), Path.Combine(dir, p.Item2));
             }
-        }
-        
-        private static Match FindLastMatch(string input, string pattern)
-        {
-            Regex rgx = new Regex(pattern, RegexOptions.RightToLeft);
-            return rgx.Match(input);
-        }
-        private static string GetHead(string numstring)
-        {
-            Match LM = FindLastMatch(numstring, @"[0-9]+");
-            return numstring.Remove(LM.Index, LM.Length);
-        }
-        private static string GetNum(string numstring)
-        {
-            Match LM = FindLastMatch(numstring, @"[0-9]+");
-            return LM.Value;
+            return;
+        HelpAndExit:
+            const string HelpText = "renameNumFiles [path]";
+            Console.WriteLine(HelpText);
+            return;
         }
     }
 }
