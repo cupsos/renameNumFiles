@@ -1,31 +1,9 @@
 # renameNumFiles
-rename filenames that include number from zero
+ 숫자 들어간 파일들 이름을 정렬함
 
-# usage
-`renameNumFiles.exe [path]`
-
-# example
-```
-$ls
-File20.png File25.png file1.txt file2.txt file50.txt nonNumFile numDir32
-$renameNumFiles.exe .
-rename : File20.png => File0.png
-rename : File25.png => File1.png
-rename : file1.txt => file0.txt
-rename : file2.txt => file1.txt
-rename : file50.txt => file2.txt
-$ls
-File0.png File1.png file0.txt file1.txt file2.txt nonNumFile numDir32
-```
-
-# warning
-```
-$ls
-double1_2.png double2_1.png texture512.png 
-$renameNumFiles.exe .
-rename : double1_2.png => double1_0.png
-rename : double2_1.png => double2_0.png
-rename : texture512.png => texture0.png
-$ls
-double1_0.png double2_0.png texture0.png
-```
+## 사용법
+	renameNumFiles -h
+## 만드는 데 도움을 준 사람들
+ * 숫자를 1부터 세는 사람들
+ * 숫자의 맨 앞에 0이 붙을 수 없다고 생각하는 사람들
+ * 파일 개수 < 마지막 파일 인덱스 - 처음 파일 인덱스  + 1 인 사람들

@@ -21,7 +21,7 @@ namespace renameNumFiles
             {
                 switch (argQueue.Dequeue())
                 {
-                    case "-h":
+                    case "-h": case "--help":
                         isHelp = true;
                         break;
                     case "-g":
@@ -36,7 +36,7 @@ namespace renameNumFiles
                     case "-n":
                         isSim = true;
                         break;
-                    case "-f":
+                    case "-f": case "--force":
                         isForce = true;
                         break;
                     default:
