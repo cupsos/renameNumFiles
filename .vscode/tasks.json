@@ -1,0 +1,34 @@
+{
+    "version": "0.1.0",
+    "command": "dotnet",
+    "isShellCommand": true,
+    "echoCommand": true,
+    "suppressTaskName": true,
+    "args": [],
+    "tasks": [
+        {
+            "taskName": "build",
+            "windows": {
+                "args": ["build",
+                "-r", "win10-x64", "-c", "Release",
+                "${workspaceRoot}\\renameNumFiles.csproj"
+                ]
+            },
+            "linux": {
+                "args": [
+                "-r", "debian.8-x64", "-c", "Release",
+                "${workspaceRoot}\\renameNumFiles.csproj"
+                ]
+            },
+            "isBuildCommand": true,
+            "problemMatcher": "$msCompile"
+        }
+        ,
+        {
+            "taskName": "debugbuild",
+            "args": ["build"],
+            "problemMatcher": "$msCompile"
+        }
+
+    ]
+}

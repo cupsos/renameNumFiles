@@ -10,10 +10,7 @@ namespace renameNumFiles
             Match LM = FileNameRegex.RightmostInt.Match(numstring);
             return numstring.Remove(LM.Index, LM.Length);
         }
-        public static string GetNum(string numstring)
-        {
-            Match LM = FileNameRegex.RightmostInt.Match(numstring);
-            return LM.Value;
-        }
+        public static int GetNum(string numstring) =>
+                int.Parse(FileNameRegex.RightmostInt.Match(numstring).Value);
     }
 }
