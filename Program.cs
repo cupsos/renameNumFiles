@@ -9,51 +9,42 @@ namespace renameNumFiles
         static void Main(string[] args)
         {
             if (args.Length == 0) goto NoArgument;
-            string dir = args.Last();
-            if (!Directory.Exists(dir)) goto InvalidPath;
-
             Options everyOption = new Options(args);
             if (everyOption.isHelp) goto HelpAndExit;
+            string dir = args.Last();
+            if (!Directory.Exists(dir)) goto InvalidPath;
 
             IEnumerable<string> everyFile =
                 from longFilename in Directory.GetFiles(dir)
                 select Path.GetFileName(longFilename);
-            
+
             if (everyOption.isPattern) everyFile = everyFile.Where(File => everyOption.All(File));
 
-            IEnumerable<string> oldNumFiles =
-            from file in everyFile
-            where FileNameRegex.RightmostInt.IsMatch(file)
-            orderby SortHash.Gen(file)
-            select file;
+            var oldGroups = from file in everyFile
+                            where FileNameRegex.RightmostInt.IsMatch(file)
+                            orderby SortHash.Gen(file)
+                            group file by FileNameRegex.GetHead(file) into g
+                            select g;
 
-            var headers = oldNumFiles.Select(file => FileNameRegex.GetHead(file)).Distinct();
             Dictionary<string, int> NameCounter = new Dictionary<string, int>();
-            Dictionary<string, string> CharLength = new Dictionary<string, string>();
-            foreach (string h in headers)//Init Dic
-            {
-                NameCounter.Add(h, 0);
-                CharLength.Add(h, $"D{oldNumFiles.Where(file => FileNameRegex.GetHead(file) == h).Count() / 10 + 1}");
-            }
+            foreach (var og in oldGroups)
+                NameCounter.Add(og.Key, 0);
 
-            IEnumerable<string> newNumFiles = oldNumFiles.Select(oldfile =>
-            {
-                string head = FileNameRegex.GetHead(oldfile);
-                string ret = FileNameRegex.RightmostInt.Replace(oldfile, NameCounter[head].ToString(CharLength[head]), 1);
-                NameCounter[head]++;
-                return ret;
-            });
-
-            var mvArgs = Enumerable.Zip(oldNumFiles, newNumFiles, (oldName, newName)
-                             => new {oldName = oldName, newName = newName});
-
+            var mvArgs = from og in oldGroups
+                         from oldName in og
+                         select new
+                         {
+                             oldName,
+                             newName = FileNameRegex.RightmostInt.Replace(oldName,
+                         (NameCounter[og.Key]++).ToString($"D{(og.Count() - 1) / 10 + 1}"))
+                         };
             foreach (var mArg in mvArgs)
             {
                 Console.WriteLine($"rename : {mArg.oldName} => {mArg.newName}");
-                if(everyOption.isForce && !everyOption.isSim)
+                if (everyOption.isForce && !everyOption.isSim)
                     File.Move(Path.Combine(dir, mArg.oldName), Path.Combine(dir, mArg.newName));
             }
-            if(everyOption.isForce && !everyOption.isSim)
+            if (everyOption.isForce && !everyOption.isSim)
                 Console.WriteLine($"{mvArgs.Count()} file(s) moved");
             else
                 Console.WriteLine($"{mvArgs.Count()} file(s) simulated");

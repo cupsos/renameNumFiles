@@ -10,7 +10,7 @@ namespace renameNumFiles
         public readonly bool isHelp = false;
         public readonly bool isSim = false;
         public readonly bool isForce = false;
-        public bool isPattern => array.Length > 0;
+        public bool isPattern => array.Any();
         private Option[] array;
         public Options(string[] args)
         {
@@ -19,35 +19,49 @@ namespace renameNumFiles
 
             while (argQueue.Any())
             {
-                switch (argQueue.Dequeue())
+                var op = argQueue.Dequeue();
+                switch (op)
                 {
-                    case "-h": case "--help":
+                    case "-h":
+                    case "--help":
                         isHelp = true;
                         break;
                     case "-g":
-                        optionList.Add(new Grep(argQueue.Dequeue()));
-                        break;
                     case "-gi":
-                        optionList.Add(new GrepCaseIgnore(argQueue.Dequeue()));
-                        break;
                     case "-gx":
-                        optionList.Add(new GrepRegex(argQueue.Dequeue()));
+                        if (!argQueue.Any()) goto noOption;
+                        switch (op)
+                        {
+                            case "-g":
+                                optionList.Add(new Grep(argQueue.Dequeue()));
+                                break;
+                            case "-gi":
+                                optionList.Add(new GrepCaseIgnore(argQueue.Dequeue()));
+                                break;
+                            case "-gx":
+                                optionList.Add(new GrepRegex(argQueue.Dequeue()));
+                                break;
+                        }
                         break;
                     case "-n":
                         isSim = true;
                         break;
-                    case "-f": case "--force":
+                    case "-f":
+                    case "--force":
                         isForce = true;
                         break;
                     default:
+                        Console.WriteLine($"{op} is not a valid option");
                         Environment.Exit(1);
+                        break;
+                    noOption:
+                        Console.WriteLine($"{op} need argument");
                         break;
                 }
             }
             this.array = optionList.ToArray();
         }
-        public int Length => this.array.Length;
         public bool All(string fileName) =>
-            array.All( o => o.isMatch(fileName));
+            array.Any() ? array.All(o => o.isMatch(fileName)) : true;
     }
 }
