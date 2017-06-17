@@ -10,7 +10,7 @@ namespace renameNumFiles
         public readonly bool isHelp = false;
         public readonly bool isSim = false;
         public readonly bool isForce = false;
-        public bool isPattern => array.Any();
+        public readonly bool isPattern = false;
         private Option[] array;
         public Options(string[] args)
         {
@@ -60,8 +60,9 @@ namespace renameNumFiles
                 }
             }
             this.array = optionList.ToArray();
+            isPattern = this.array.Any();
         }
         public bool All(string fileName) =>
-            array.Any() ? array.All(o => o.isMatch(fileName)) : true;
+            isPattern ? array.All(o => o.isMatch(fileName)) : true;
     }
 }

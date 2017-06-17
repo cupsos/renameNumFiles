@@ -8,7 +8,7 @@ namespace renameNumFiles
     {
         static void Main(string[] args)
         {
-            if (args.Length == 0) goto NoArgument;
+            if(!args.Any()) goto HelpAndExit;
             Options everyOption = new Options(args);
             if (everyOption.isHelp) goto HelpAndExit;
             string dir = args.Last();
@@ -38,33 +38,27 @@ namespace renameNumFiles
                              newName = FileNameRegex.RightmostInt.Replace(oldName,
                          (NameCounter[og.Key]++).ToString($"D{(og.Count() - 1) / 10 + 1}"))
                          };
+            bool isReal = everyOption.isForce && !everyOption.isSim;
             foreach (var mArg in mvArgs)
             {
                 Console.WriteLine($"rename : {mArg.oldName} => {mArg.newName}");
-                if (everyOption.isForce && !everyOption.isSim)
+                if (isReal)
                     File.Move(Path.Combine(dir, mArg.oldName), Path.Combine(dir, mArg.newName));
             }
-            if (everyOption.isForce && !everyOption.isSim)
-                Console.WriteLine($"{mvArgs.Count()} file(s) moved");
-            else
-                Console.WriteLine($"{mvArgs.Count()} file(s) simulated");
+            Console.WriteLine($"{mvArgs.Count()} file(s) {(isReal?"moved":"simulated")}");
             return;
         HelpAndExit:
             const string HelpText =
                     "renameNumFiles [<options>] <path>\n" +
                     "----------------------------------------------\n" +
                     "OPTIONS\n" +
-                    "\t--version\n" +
-                    "\t--help\n" +
-                    "\t-g\n\t\tPATTERN\n" +
-                    "\t-gi\n\t\tPATTERN. Ignore case\n" +
-                    "\t-gx\n\t\tPATTERN. Regex\n" +
-                    "\t-n\n\t\tDon't actually rename anything, just show what would be done. It is default\n" +
-                    "\t-f\n\t\tDo file rename\n";
+                    "\t-h --help\tPrint this page\n" +
+                    "\t-g\t\tPATTERN\n" +
+                    "\t-gi\t\tPATTERN. Ignore case\n" +
+                    "\t-gx\t\tPATTERN. Regex\n" +
+                    "\t-n\t\tDon't actually rename anything, just show what would be done. It is default\n" +
+                    "\t-f --force\tDo file rename if -n option is not set\n";
             Console.Write(HelpText);
-            Environment.Exit(1);
-        NoArgument:
-            Console.WriteLine("No argument");
             Environment.Exit(1);
         InvalidPath:
             Console.WriteLine($"Path {args.Last()} is not exist");
