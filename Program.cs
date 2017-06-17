@@ -36,7 +36,7 @@ namespace renameNumFiles
                          {
                              oldName,
                              newName = FileNameRegex.RightmostInt.Replace(oldName,
-                         (NameCounter[og.Key]++).ToString($"D{(og.Count() - 1) / 10 + 1}"))
+                         (NameCounter[og.Key]++).ToString($"D{(1+(int)Math.Floor(Math.Log10(og.Count()))) }"))
                          };
             bool isReal = everyOption.isForce && !everyOption.isSim;
             foreach (var mArg in mvArgs)

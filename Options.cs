@@ -15,7 +15,7 @@ namespace renameNumFiles
         public Options(string[] args)
         {
             List<Option> optionList = new List<Option>(args.Length / 2);
-            var argQueue = new Queue<string>(args.dropLastArray());
+            var argQueue = new Queue<string>(args);
 
             while (argQueue.Any())
             {
@@ -51,8 +51,11 @@ namespace renameNumFiles
                         isForce = true;
                         break;
                     default:
-                        Console.WriteLine($"{op} is not a valid option");
-                        Environment.Exit(1);
+                        if(argQueue.Any())
+                        {
+                            Console.WriteLine($"{op} is not a valid option");
+                            Environment.Exit(1);
+                        }
                         break;
                     noOption:
                         Console.WriteLine($"{op} need argument");
